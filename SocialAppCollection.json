@@ -1,0 +1,2885 @@
+{
+	"info": {
+		"_postman_id": "d9b1c5f6-eb0e-46ed-8f79-dbb77c985a6d",
+		"name": "Social App Comment Functionality",
+		"description": "This collection is designed for testing the comment functionality of a social application's API. The tests cover various scenarios related to creating, editing, and deleting comments on posts. The data is seeded from JSONPlaceholder, and tests include both positive and negative cases. Positive cases also contains integration scenarios between posts and comments.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "9303165"
+	},
+	"item": [
+		{
+			"name": "Positive Cases",
+			"item": [
+				{
+					"name": "Get all posts and comments",
+					"item": [
+						{
+							"name": "Get All Comments",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 200', ()=> {",
+											"    pm.expect(pm.response.code).to.eq(200)",
+											"})",
+											"",
+											"pm.test('Response time is less than the limit', ()=> {",
+											"    pm.expect(pm.response.responseTime).to.be.below(Number(pm.environment.get('responseTimeLimit')))",
+											"})",
+											"",
+											"const response = pm.response.json();",
+											"",
+											"pm.test('Response to be an array of objects', ()=>{",
+											"    pm.expect(response).to.not.be.null",
+											"    pm.expect(response).to.be.an('array')",
+											"    pm.expect(response[0]).to.be.an('object')",
+											"})",
+											"",
+											"pm.test('All comments have a valid id and postId', ()=>{",
+											"    _.each(response, (item) => {",
+											"        pm.expect(item).to.have.property('postId').to.be.a('number')",
+											"        pm.expect(item).to.have.property('id').to.be.a('number')",
+											"        //assuming postId is a mandatory field for comments",
+											"        //it can be applied to other mandatory fields as well",
+											"    })",
+											"})",
+											"",
+											"",
+											"",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{baseUrl}}/comments"
+							},
+							"response": []
+						},
+						{
+							"name": "Get Posts along with their Comments",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 200', ()=> {",
+											"    pm.expect(pm.response.code).to.eq(200)",
+											"})",
+											"",
+											"pm.test('Response time is less than the limit', ()=> {",
+											"    pm.expect(pm.response.responseTime).to.be.below(Number(pm.environment.get('responseTimeLimit')))",
+											"})",
+											"",
+											"const response = pm.response.json();",
+											"",
+											"pm.test('Response to be an array of objects', ()=>{",
+											"    pm.expect(response).to.not.be.null",
+											"    pm.expect(response).to.be.an('array')",
+											"    pm.expect(response[0]).to.be.an('object')",
+											"})",
+											"",
+											"pm.test('All posts have their respective comments with correct ids and post ids', ()=>{",
+											"    _.each(response, (post, i) => {",
+											"       // console.log(i+1)",
+											"        if(post.comments.length != 0){ //check the comments only if they exist for a post",
+											"            post.comments.forEach((com)=>{",
+											"            pm.expect(com).to.have.property('postId').to.eq(i+1) //to ensure the comments have correct postIds for all posts",
+											"            pm.expect(com).to.have.property('id').to.be.a('number')",
+											"            })",
+											"        } ",
+											"    })",
+											"})",
+											"",
+											"pm.test('All posts have a valid post id', ()=>{",
+											"    _.each(response, (item) => {",
+											"        pm.expect(item).to.have.property('id').to.be.a('number')",
+											"        //it can be applied to other mandatory fields as well",
+											"    })",
+											"})",
+											"",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/posts?_embed=comments",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"posts"
+									],
+									"query": [
+										{
+											"key": "_embed",
+											"value": "comments"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Create a comment and verify association with the post",
+					"item": [
+						{
+							"name": "Create a New Comment",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 201(created)', ()=> {",
+											"    pm.expect(pm.response.code).to.eq(201)",
+											"})",
+											"",
+											"pm.test('Response time is less than the limit', ()=> {",
+											"    pm.expect(pm.response.responseTime).to.be.below(Number(pm.environment.get('responseTimeLimit')))",
+											"})",
+											"",
+											"const response = pm.response.json();",
+											"",
+											"pm.test('Verify response is an object', ()=>{",
+											"    pm.expect(response).to.not.be.null",
+											"    pm.expect(response).to.be.an('object')",
+											"})",
+											"",
+											"pm.test('Verify comment has all added properties and values', ()=>{",
+											"   const prop = ['postId', 'name', 'email', 'body']",
+											"   const values = [5, 'indeed, by which he wants to reject and the like of them', 'Jayne_Kuhic@sydney.com', 'for he was born, there is nothing with pain, all pleasure is never']",
+											"   prop.forEach((p, i)=> {",
+											"       pm.expect(response).to.have.property(p).to.eq(values[i])",
+											"   }) ",
+											"   pm.environment.set('postId', response.postId)",
+											"})",
+											"",
+											"pm.test('Comment has a valid auto-generated Id', ()=>{",
+											"    pm.expect(response.id).to.not.be.null",
+											"    pm.expect(response.id).to.be.a('number')",
+											"    pm.environment.set('commentId', response.id)",
+											"})",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"description": "Without this, it will return a 2XX status code, but without changes being made to the data.",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"postId\": 5,\n    \"name\": \"indeed, by which he wants to reject and the like of them\",\n    \"email\": \"Jayne_Kuhic@sydney.com\",\n    \"body\": \"for he was born, there is nothing with pain, all pleasure is never\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{baseUrl}}/comments/"
+							},
+							"response": []
+						},
+						{
+							"name": "New Comment Association with Post",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 200', ()=> {",
+											"    pm.expect(pm.response.code).to.eq(200)",
+											"})",
+											"",
+											"pm.test('Response time is less than the limit', ()=> {",
+											"    pm.expect(pm.response.responseTime).to.be.below(Number(pm.environment.get('responseTimeLimit')))",
+											"})",
+											"",
+											"const response = pm.response.json();",
+											"",
+											"pm.test('Verify response is an object', ()=>{",
+											"    pm.expect(response).to.not.be.null",
+											"    pm.expect(response).to.be.an('object')",
+											"})",
+											"",
+											"pm.test('The post should have a valid id and exisitng comments', ()=>{",
+											"    pm.expect(response.id).to.be.a('number')",
+											"    pm.expect(response.comments).to.not.be.empty //since we added a commwnt recently, we know it will not be empty",
+											"})",
+											"",
+											"pm.test('All comments should have the same postId', ()=>{",
+											"     _.each(response.comments, (item) => {",
+											"        pm.expect(item).to.have.property('postId').to.be.a('number')",
+											"        pm.expect(item).to.have.property('postId').to.eq(pm.environment.get('postId'))",
+											"    })",
+											"})",
+											"",
+											"pm.test('Check if the recently added comment is associated with this post', ()=>{",
+											"     //when our added comment is at the end for sure",
+											"        pm.expect(_.last(response.comments).id).to.eq(pm.environment.get('commentId')) ",
+											"",
+											"    //when our added comment could be anywhere in the comment section of a post",
+											"   /* const comment = response.comments.find(a => a.id === Number(pm.environment.get('commentId')));",
+											"    pm.expect(comment).to.not.be.undefined */",
+											"      ",
+											"})",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/posts/{{postId}}?_embed=comments",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"posts",
+										"{{postId}}"
+									],
+									"query": [
+										{
+											"key": "_embed",
+											"value": "comments"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get the Newly Added Comment",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 200', ()=> {",
+											"    pm.expect(pm.response.code).to.eq(200)",
+											"})",
+											"",
+											"pm.test('Response time is less than the limit', ()=> {",
+											"    pm.expect(pm.response.responseTime).to.be.below(Number(pm.environment.get('responseTimeLimit')))",
+											"})",
+											"",
+											"const response = pm.response.json();",
+											"",
+											"pm.test('Verify response is an object', ()=>{",
+											"    pm.expect(response).to.not.be.null",
+											"    pm.expect(response).to.be.an('object')",
+											"})",
+											"",
+											"pm.test('Verify comment properties and values', ()=>{",
+											"   const prop = ['name', 'email', 'body']",
+											"   const values = ['indeed, by which he wants to reject and the like of them', 'Jayne_Kuhic@sydney.com', 'for he was born, there is nothing with pain, all pleasure is never']",
+											"   prop.forEach((p, i)=> {",
+											"       pm.expect(response).to.have.property(p).to.eq(values[i])",
+											"   }) ",
+											"})",
+											"",
+											"pm.test('Verify comment id matches with the newly added comment', ()=>{",
+											"    pm.expect(response.id).to.eq(pm.environment.get('commentId'))",
+											"})",
+											"",
+											"pm.test('Comment has the correct postId', ()=>{",
+											"    pm.expect(response.postId).to.eq(pm.environment.get('postId'))",
+											"})",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/comments/:id",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"comments",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "{{commentId}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete a Comment using Comment Id",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 200', ()=> {",
+											"    pm.expect(pm.response.code).to.eq(200)",
+											"})",
+											"",
+											"pm.test('Response time is less than the limit', ()=> {",
+											"    pm.expect(pm.response.responseTime).to.be.below(Number(pm.environment.get('responseTimeLimit')))",
+											"})",
+											"",
+											"const response = pm.response.json();",
+											"",
+											"pm.test('Verify response is an object', ()=>{",
+											"    pm.expect(response).to.not.be.null",
+											"    pm.expect(response).to.be.an('object')",
+											"})",
+											"",
+											"pm.test('Check if the deleted comment is NOT associated with the post anymore', ()=>{",
+											"     pm.expect(response).is.empty",
+											"})",
+											"",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/comments/:id",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"comments",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "{{commentId}}"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Update a comment and verify association with the post",
+					"item": [
+						{
+							"name": "Create a New Comment",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 201(created)', ()=> {",
+											"    pm.expect(pm.response.code).to.eq(201)",
+											"})",
+											"",
+											"pm.test('Response time is less than the limit', ()=> {",
+											"    pm.expect(pm.response.responseTime).to.be.below(Number(pm.environment.get('responseTimeLimit')))",
+											"})",
+											"",
+											"const response = pm.response.json();",
+											"",
+											"pm.test('Verify response is an object', ()=>{",
+											"    pm.expect(response).to.not.be.null",
+											"    pm.expect(response).to.be.an('object')",
+											"})",
+											"",
+											"pm.test('Verify comment has all added properties and values', ()=>{",
+											"   const prop = ['postId', 'name', 'email', 'body']",
+											"   const values = [5, 'indeed, by which he wants to reject and the like of them', 'Jayne_Kuhic@sydney.com', 'for he was born, there is nothing with pain, all pleasure is never']",
+											"   prop.forEach((p, i)=> {",
+											"       pm.expect(response).to.have.property(p).to.eq(values[i])",
+											"   }) ",
+											"   pm.environment.set('postId', response.postId)",
+											"})",
+											"",
+											"pm.test('Comment has a valid auto-generated Id', ()=>{",
+											"    pm.expect(response.id).to.not.be.null",
+											"    pm.expect(response.id).to.be.a('number')",
+											"    pm.environment.set('commentId', response.id)",
+											"})",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"description": "Without this, it will return a 2XX status code, but without changes being made to the data.",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"postId\": 5,\n    \"name\": \"indeed, by which he wants to reject and the like of them\",\n    \"email\": \"Jayne_Kuhic@sydney.com\",\n    \"body\": \"for he was born, there is nothing with pain, all pleasure is never\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{baseUrl}}/comments/"
+							},
+							"response": []
+						},
+						{
+							"name": "Update the Entire Comment",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 200', ()=> {",
+											"    pm.expect(pm.response.code).to.eq(200)",
+											"})",
+											"",
+											"pm.test('Response time is less than the limit', ()=> {",
+											"    pm.expect(pm.response.responseTime).to.be.below(Number(pm.environment.get('responseTimeLimit')))",
+											"})",
+											"",
+											"const response = pm.response.json();",
+											"",
+											"pm.test('Verify response is an object', ()=>{",
+											"    pm.expect(response).to.not.be.null",
+											"    pm.expect(response).to.be.an('object')",
+											"})",
+											"",
+											"pm.test('Verify comment has all updated values', ()=>{",
+											"   const prop = ['postId', 'name', 'email', 'body']",
+											"   const values = [2, 'that labor from and how labors', 'Eliseo@gardner.biz', 'For those who praise, as it were, indeed with great pleasure, those times when they are in need, but rather than rejecting them, and for the wise accuse them']",
+											"   prop.forEach((p, i)=> {",
+											"       pm.expect(response).to.have.property(p).to.eq(values[i]) ",
+											"   }) ",
+											"   pm.environment.set('postId', response.postId)",
+											"})",
+											"",
+											"pm.test('Verify comment id is unchanged', ()=>{",
+											"    pm.expect(response.id).to.not.be.null",
+											"    pm.expect(response.id).to.eq(pm.environment.get('commentId'))",
+											"})",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"postId\": 2,\n    \"name\": \"that labor from and how labors\",\n    \"email\": \"Eliseo@gardner.biz\",\n    \"body\": \"For those who praise, as it were, indeed with great pleasure, those times when they are in need, but rather than rejecting them, and for the wise accuse them\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/comments/:id",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"comments",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "{{commentId}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Post Id for a Comment",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 200', ()=> {",
+											"    pm.expect(pm.response.code).to.eq(200)",
+											"})",
+											"",
+											"pm.test('Response time is less than the limit', ()=> {",
+											"    pm.expect(pm.response.responseTime).to.be.below(Number(pm.environment.get('responseTimeLimit')))",
+											"})",
+											"",
+											"const response = pm.response.json();",
+											"",
+											"pm.test('Verify response is an object', ()=>{",
+											"    pm.expect(response).to.not.be.null",
+											"    pm.expect(response).to.be.an('object')",
+											"})",
+											"",
+											"pm.test('Verify only the postId has updated value', ()=>{",
+											"   const prop = ['postId', 'name', 'email', 'body']",
+											"   const values = [3, 'that labor from and how labors', 'Eliseo@gardner.biz', 'For those who praise, as it were, indeed with great pleasure, those times when they are in need, but rather than rejecting them, and for the wise accuse them']",
+											"   prop.forEach((p, i)=> {",
+											"       pm.expect(response).to.have.property(p).to.eq(values[i])",
+											"   }) ",
+											"   pm.environment.set('postId', response.postId)",
+											"})",
+											"",
+											"pm.test('Verify comment id is unchanged', ()=>{",
+											"    pm.expect(response.id).to.not.be.null",
+											"    pm.expect(response.id).to.eq(pm.environment.get('commentId'))",
+											"    ",
+											"})",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PATCH",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"postId\": 3\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/comments/:id",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"comments",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "{{commentId}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Check Updated Comment is Associated with the Post",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 200', ()=> {",
+											"    pm.expect(pm.response.code).to.eq(200)",
+											"})",
+											"",
+											"pm.test('Response time is less than the limit', ()=> {",
+											"    pm.expect(pm.response.responseTime).to.be.below(Number(pm.environment.get('responseTimeLimit')))",
+											"})",
+											"",
+											"const response = pm.response.json();",
+											"",
+											"pm.test('Verify response is an object', ()=>{",
+											"    pm.expect(response).to.not.be.null",
+											"    pm.expect(response).to.be.an('object')",
+											"",
+											"})",
+											"",
+											"pm.test('The post should have a valid id and exisitng comments', ()=>{",
+											"    pm.expect(response.id).to.be.a('number')",
+											"    pm.expect(response.comments).to.not.be.empty",
+											"})",
+											"",
+											"pm.test('All comments should have the same postId', ()=>{",
+											"     _.each(response.comments, (item) => {",
+											"        pm.expect(item).to.have.property('postId').to.be.a('number')",
+											"        pm.expect(item).to.have.property('postId').to.eq(pm.environment.get('postId'))",
+											"    })",
+											"})",
+											"",
+											"pm.test('Check if the recently added comment is associated with this post', ()=>{",
+											"     //when our added comment is at the end for sure",
+											"        pm.expect(_.last(response.comments).id).to.eq(pm.environment.get('commentId')) ",
+											"",
+											"    //when our added comment could be anywhere in the comment section of a post",
+											"   /* const comment = response.comments.find(a => a.id === Number(pm.environment.get('commentId')));",
+											"    pm.expect(comment).to.not.be.undefined */",
+											"      ",
+											"})",
+											"",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/posts/{{postId}}?_embed=comments",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"posts",
+										"{{postId}}"
+									],
+									"query": [
+										{
+											"key": "_embed",
+											"value": "comments"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete a Comment using Comment Id",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 200', ()=> {",
+											"    pm.expect(pm.response.code).to.eq(200)",
+											"})",
+											"",
+											"pm.test('Response time is less than the limit', ()=> {",
+											"    pm.expect(pm.response.responseTime).to.be.below(Number(pm.environment.get('responseTimeLimit')))",
+											"})",
+											"",
+											"const response = pm.response.json();",
+											"",
+											"pm.test('Verify response is an object', ()=>{",
+											"    pm.expect(response).to.not.be.null",
+											"    pm.expect(response).to.be.an('object')",
+											"})",
+											"",
+											"pm.test('Check if the deleted comment is NOT associated with the post anymore', ()=>{",
+											"     pm.expect(response).is.empty",
+											"})",
+											"",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/comments/:id",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"comments",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "{{commentId}}"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Delete a comment and verify it's no longer associated with the post",
+					"item": [
+						{
+							"name": "Create a New Comment",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 201(created)', ()=> {",
+											"    pm.expect(pm.response.code).to.eq(201)",
+											"})",
+											"",
+											"pm.test('Response time is less than the limit', ()=> {",
+											"    pm.expect(pm.response.responseTime).to.be.below(Number(pm.environment.get('responseTimeLimit')))",
+											"})",
+											"",
+											"const response = pm.response.json();",
+											"",
+											"pm.test('Verify response is an object', ()=>{",
+											"    pm.expect(response).to.not.be.null",
+											"    pm.expect(response).to.be.an('object')",
+											"})",
+											"",
+											"pm.test('Verify comment has all added properties and values', ()=>{",
+											"   const prop = ['postId', 'name', 'email', 'body']",
+											"   const values = [5, 'indeed, by which he wants to reject and the like of them', 'Jayne_Kuhic@sydney.com', 'for he was born, there is nothing with pain, all pleasure is never']",
+											"   prop.forEach((p, i)=> {",
+											"       pm.expect(response).to.have.property(p).to.eq(values[i])",
+											"   }) ",
+											"   pm.environment.set('postId', response.postId)",
+											"})",
+											"",
+											"pm.test('Comment has a valid auto-generated Id', ()=>{",
+											"    pm.expect(response.id).to.not.be.null",
+											"    pm.expect(response.id).to.be.a('number')",
+											"    pm.environment.set('commentId', response.id)",
+											"})",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"description": "Without this, it will return a 2XX status code, but without changes being made to the data.",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"postId\": 5,\n    \"name\": \"indeed, by which he wants to reject and the like of them\",\n    \"email\": \"Jayne_Kuhic@sydney.com\",\n    \"body\": \"for he was born, there is nothing with pain, all pleasure is never\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{baseUrl}}/comments/"
+							},
+							"response": []
+						},
+						{
+							"name": "Delete a Comment using Comment Id",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 200', ()=> {",
+											"    pm.expect(pm.response.code).to.eq(200)",
+											"})",
+											"",
+											"pm.test('Response time is less than the limit', ()=> {",
+											"    pm.expect(pm.response.responseTime).to.be.below(Number(pm.environment.get('responseTimeLimit')))",
+											"})",
+											"",
+											"const response = pm.response.json();",
+											"",
+											"pm.test('Verify response is an object', ()=>{",
+											"    pm.expect(response).to.not.be.null",
+											"    pm.expect(response).to.be.an('object')",
+											"})",
+											"",
+											"pm.test('Check if the deleted comment is NOT associated with the post anymore', ()=>{",
+											"     pm.expect(response).is.empty",
+											"})",
+											"",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/comments/:id",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"comments",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "{{commentId}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Check Deleted Comment is not Associated with Post",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 200', ()=> {",
+											"    pm.expect(pm.response.code).to.eq(200)",
+											"})",
+											"",
+											"pm.test('Response time is less than the limit', ()=> {",
+											"    pm.expect(pm.response.responseTime).to.be.below(Number(pm.environment.get('responseTimeLimit')))",
+											"})",
+											"",
+											"const response = pm.response.json();",
+											"",
+											"pm.test('Verify response is an object', ()=>{",
+											"    pm.expect(response).to.not.be.null",
+											"    pm.expect(response).to.be.an('object')",
+											"})",
+											"",
+											"pm.test('The post should have a valid id', ()=>{",
+											"    pm.expect(response.id).to.be.a('number') //we are not checking comments here, because it is possible that we deleted the only comment this post had",
+											"})",
+											"",
+											"",
+											"pm.test('All comments should have the same postId', ()=>{",
+											"    if(response.comments.length != 0){ //check if comments exist for this post ",
+											"        _.each(response.comments, (item) => {",
+											"            pm.expect(item).to.have.property('postId').to.be.a('number')",
+											"            pm.expect(item).to.have.property('postId').to.eq(pm.environment.get('postId'))",
+											"            })",
+											"    }",
+											"     ",
+											"})",
+											"",
+											"pm.test('Check if the recently deleted comment is NOT associated with this post', ()=>{",
+											"    if(response.comments.length != 0){ //check if comments exist for this post ",
+											"        //when our added comment is at the end for sure",
+											"        pm.expect(_.last(response.comments).id).to.not.eq(pm.environment.get('commentId')) ",
+											"",
+											"        //when our added comment could be anywhere in the comment section of a post",
+											"        /* const comment = response.comments.find(a => a.id === Number(pm.environment.get('commentId')));",
+											"            pm.expect(comment).to.be.undefined */",
+											"    }",
+											"    ",
+											"      ",
+											"})",
+											"",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/posts/{{postId}}?_embed=comments",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"posts",
+										"{{postId}}"
+									],
+									"query": [
+										{
+											"key": "_embed",
+											"value": "comments"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Delete All Comments for a Post",
+					"item": [
+						{
+							"name": "Create a Post",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 201(created)', ()=> {",
+											"    pm.expect(pm.response.code).to.eq(201)",
+											"})",
+											"",
+											"pm.test('Response time is less than the limit', ()=> {",
+											"    pm.expect(pm.response.responseTime).to.be.below(Number(pm.environment.get('responseTimeLimit')))",
+											"})",
+											"",
+											"const response = pm.response.json();",
+											"",
+											"pm.test('Verify response is an object', ()=>{",
+											"    pm.expect(response).to.not.be.null",
+											"    pm.expect(response).to.be.an('object')",
+											"})",
+											"",
+											"pm.test('Verify post has all added properties and values', ()=>{",
+											"   const prop = ['userId', 'title', 'body']",
+											"   const values = [1, 'Sample Post', 'Sample post body']",
+											"   prop.forEach((p, i)=> {",
+											"       pm.expect(response).to.have.property(p).to.eq(values[i])",
+											"   }) ",
+											"})",
+											"",
+											"pm.test('Post has a valid auto-generated Id', ()=>{",
+											"    pm.expect(response.id).to.not.be.null",
+											"    pm.expect(response.id).to.be.a('number') ",
+											"    pm.environment.set('postId', response.id)",
+											"})",
+											"",
+											"postman.setNextRequest('Create Multiple Comments')",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n      \"userId\": 1,\n      \"title\": \"Sample Post\",\n      \"body\": \"Sample post body\"\n    }",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{baseUrl}}/posts"
+							},
+							"response": []
+						},
+						{
+							"name": "Create Multiple Comments",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"const arr = pm.collectionVariables.get('requestCount');",
+											"const CCount = pm.collectionVariables.get('count');",
+											"",
+											"if (arr && arr.length > 0){",
+											"    postman.setNextRequest('Create Multiple Comments')",
+											"} else {",
+											"    postman.setNextRequest('Verify All the Comments have been Added to the Post');",
+											"}",
+											"",
+											"//Assertions ",
+											"",
+											"pm.test('Status code is 201(created)', ()=> {",
+											"    pm.expect(pm.response.code).to.eq(201)",
+											"})",
+											"",
+											"",
+											"pm.test('Response time is less than the limit', ()=> {",
+											"    pm.expect(pm.response.responseTime).to.be.below(Number(pm.environment.get('responseTimeLimit')))",
+											"})",
+											"",
+											"const response = pm.response.json();",
+											"",
+											"pm.test('Verify response is an object', ()=>{",
+											"    pm.expect(response).to.not.be.null",
+											"    pm.expect(response).to.be.an('object')",
+											"})",
+											"",
+											"pm.test('Verify comment has all added properties and values', ()=>{",
+											"   const prop = ['postId', 'name', 'email', 'body']",
+											"   const values = [pm.environment.get('postId'), 'Sample Comment 1', 'Jayne_Kuhic@sydney.com', 'Sample Body 1']",
+											"   prop.forEach((p, i)=> {",
+											"       pm.expect(response).to.have.property(p).to.eq(values[i])",
+											"   }) ",
+											"})",
+											"",
+											"pm.test('Comment has a valid auto-generated Id', ()=>{",
+											"    pm.expect(response.id).to.not.be.null",
+											"    pm.expect(response.id).to.be.a('number') ",
+											"    pm.environment.set('CommentId'+CCount, response.id)",
+											"})",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"let countArr = pm.collectionVariables.get('requestCount')",
+											"",
+											"if(!countArr || countArr.length == 0) {",
+											"    countArr = [1,2,3]",
+											"}",
+											"",
+											"let currentCount = countArr.shift(); //remove the first element of the count array and store it",
+											"pm.collectionVariables.set('count', currentCount)",
+											"pm.collectionVariables.set('requestCount', countArr)"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"protocolProfileBehavior": {
+								"disabledSystemHeaders": {
+									"content-type": true
+								}
+							},
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"description": "Without this, it will return a 2XX status code, but without changes being made to the data.",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"postId\": {{postId}},\n    \"name\": \"Sample Comment 1\",\n    \"email\": \"Jayne_Kuhic@sydney.com\",\n    \"body\": \"Sample Body 1\"\n}"
+								},
+								"url": "{{baseUrl}}/comments/"
+							},
+							"response": []
+						},
+						{
+							"name": "Verify All the Comments have been Added to the Post",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 200', ()=> {",
+											"    pm.expect(pm.response.code).to.eq(200)",
+											"})",
+											"",
+											"pm.test('Response time is less than the limit', ()=> {",
+											"    pm.expect(pm.response.responseTime).to.be.below(Number(pm.environment.get('responseTimeLimit')))",
+											"})",
+											"",
+											"const response = pm.response.json();",
+											"",
+											"pm.test('Verify response is an object', ()=>{",
+											"    pm.expect(response).to.not.be.null",
+											"    pm.expect(response).to.be.an('object')",
+											"})",
+											"",
+											"pm.test('The post should have a valid id and exisitng comments', ()=>{",
+											"    pm.expect(response.id).to.be.a('number')",
+											"    pm.expect(response.comments).to.not.be.empty //since we added a commwnt recently, we know it will not be empty",
+											"})",
+											"",
+											"pm.test('All comments should have the same postId', ()=>{",
+											"     _.each(response.comments, (item) => {",
+											"        pm.expect(item).to.have.property('postId').to.be.a('number')",
+											"        pm.expect(item).to.have.property('postId').to.eq(pm.environment.get('postId'))",
+											"    })",
+											"})",
+											"",
+											"pm.test('Check if the recently added comments are associated with this post', ()=>{",
+											"     response.comments.forEach((com, i)=>{",
+											"         ",
+											"            pm.expect(com).to.have.property('id').to.be.a('number')",
+											"            pm.expect(com.id).to.eq(pm.environment.get('CommentId'+(i+1)))",
+											"            })",
+											"      ",
+											"})",
+											"",
+											"postman.setNextRequest('Deleted All Comments Associated with a Post');",
+											"",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/posts/{{postId}}?_embed=comments",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"posts",
+										"{{postId}}"
+									],
+									"query": [
+										{
+											"key": "_embed",
+											"value": "comments"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Deleted All Comments Associated with a Post",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"const arr = pm.collectionVariables.get('requestCount');",
+											"",
+											"if (arr && arr.length > 0){",
+											"    postman.setNextRequest('Deleted All Comments Associated with a Post')",
+											"} else {",
+											"    postman.setNextRequest('Delete the Post');",
+											"}",
+											"",
+											"//Assertions ",
+											"pm.test('Status code is 200', ()=> {",
+											"    pm.expect(pm.response.code).to.eq(200)",
+											"})",
+											"",
+											"pm.test('Response time is less than the limit', ()=> {",
+											"    pm.expect(pm.response.responseTime).to.be.below(Number(pm.environment.get('responseTimeLimit')))",
+											"})",
+											"",
+											"const response = pm.response.json();",
+											"",
+											"pm.test('Verify response is an object', ()=>{",
+											"    pm.expect(response).to.not.be.null",
+											"    pm.expect(response).to.be.an('object')",
+											"})",
+											"",
+											"pm.test('Check if the deleted comments are NOT associated with this post anymore', ()=>{",
+											"     pm.expect(response).is.empty",
+											"})",
+											"",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"let countArr = pm.collectionVariables.get('requestCount')",
+											"",
+											"if(!countArr || countArr.length == 0) {",
+											"    countArr = [1,2,3]",
+											"}",
+											"",
+											"let currentCount = countArr.shift(); //remove the first element of the count array and store it",
+											"",
+											"const ccid = pm.environment.get('CommentId'+currentCount)",
+											"pm.environment.set('currentCommentId', ccid)",
+											"pm.collectionVariables.set('count', currentCount)",
+											"pm.collectionVariables.set('requestCount', countArr)"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/comments/:id",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"comments",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "{{currentCommentId}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete the Post",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 200', ()=> {",
+											"    pm.expect(pm.response.code).to.eq(200)",
+											"})",
+											"",
+											"pm.test('Response time is less than the limit', ()=> {",
+											"    pm.expect(pm.response.responseTime).to.be.below(Number(pm.environment.get('responseTimeLimit')))",
+											"})",
+											"",
+											"const response = pm.response.json();",
+											"",
+											"pm.test('Verify the post has been deleted', ()=>{",
+											"    pm.expect(response).to.be.an('object').is.empty",
+											"})",
+											"",
+											"//deleting the post, automatically deletes the associated comments if they exist",
+											"",
+											"",
+											"",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": "{{baseUrl}}/posts/{{postId}}"
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Update a post and verify the associated comments are unchanged",
+					"item": [
+						{
+							"name": "Get all Comments for a Post",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 200', ()=> {",
+											"    pm.expect(pm.response.code).to.eq(200)",
+											"})",
+											"",
+											"pm.test('Response time is less than the limit', ()=> {",
+											"    pm.expect(pm.response.responseTime).to.be.below(Number(pm.environment.get('responseTimeLimit')))",
+											"})",
+											"",
+											"const response = pm.response.json();",
+											"",
+											"pm.test('Verify response is an object', ()=>{",
+											"    pm.expect(response).to.not.be.null",
+											"    pm.expect(response).to.be.an('object')",
+											"",
+											"})",
+											"pm.test('Save the Number of Comments', ()=>{ ",
+											"    pm.environment.set('numberOfComments', response.comments.length)",
+											"})",
+											"",
+											"pm.test('All comments should have the same postId', ()=>{",
+											"    if(response.comments.length != 0){",
+											"        _.each(response.comments, (item) => {",
+											"            pm.expect(item).to.have.property('postId').to.eq(pm.environment.get('postId'))",
+											"        })",
+											"    }",
+											"})",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"pm.environment.set('postId', 5)"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/posts/{{postId}}?_embed=comments",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"posts",
+										"{{postId}}"
+									],
+									"query": [
+										{
+											"key": "_embed",
+											"value": "comments"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update a Post",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											"function randomString(minValue, maxValue, dataSet = 'abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ') {",
+											"    if (!minValue) {",
+											"        minValue = 20;",
+											"        maxValue = 20;",
+											"    }",
+											"",
+											"    if (!maxValue) {",
+											"        maxValue = minValue;",
+											"    }",
+											"",
+											"    let length = _.random(minValue, maxValue),",
+											"        randomString = \"\";",
+											"",
+											"    for (let i = 0; i < length; i++)",
+											"        randomString += dataSet.charAt(Math.floor(Math.random() * dataSet.length));",
+											"    return randomString;",
+											"}",
+											"",
+											"pm.environment.set('randomString', randomString());"
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 200', ()=> {",
+											"    pm.expect(pm.response.code).to.eq(200)",
+											"})",
+											"",
+											"pm.test('Response time is less than the limit', ()=> {",
+											"    pm.expect(pm.response.responseTime).to.be.below(Number(pm.environment.get('responseTimeLimit')))",
+											"})",
+											"",
+											"const response = pm.response.json();",
+											"",
+											"pm.test('Verify response is an object', ()=>{",
+											"    pm.expect(response).to.not.be.null",
+											"    pm.expect(response).to.be.an('object')",
+											"})",
+											"",
+											"pm.test('Verify post title has the correct value', ()=>{",
+											"    pm.expect(response.title).to.eq(pm.environment.get('randomString')) ",
+											"})",
+											"",
+											"pm.test('Verify post id is unchanged', ()=>{",
+											"    pm.expect(response.id).to.not.be.null",
+											"    pm.expect(response.id).to.eq(pm.environment.get('postId'))",
+											"    ",
+											"})",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PATCH",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"title\": \"{{randomString}}\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/posts/:id",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"posts",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "{{postId}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Verify the Comments are not Affected",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 200', ()=> {",
+											"    pm.expect(pm.response.code).to.eq(200)",
+											"})",
+											"",
+											"pm.test('Response time is less than the limit', ()=> {",
+											"    pm.expect(pm.response.responseTime).to.be.below(Number(pm.environment.get('responseTimeLimit')))",
+											"})",
+											"",
+											"const response = pm.response.json();",
+											"",
+											"pm.test('Verify response is an object', ()=>{",
+											"    pm.expect(response).to.not.be.null",
+											"    pm.expect(response).to.be.an('object')",
+											"",
+											"})",
+											"",
+											"pm.test('All comments should have the same postId', ()=>{",
+											"     if(response.comments.length != 0){",
+											"        _.each(response.comments, (item) => { ",
+											"            pm.expect(item).to.have.property('postId').to.eq(pm.environment.get('postId'))",
+											"        })",
+											"    }",
+											"})",
+											"",
+											"pm.test('Verify the number of comments is the same', ()=>{",
+											"    pm.expect(response.comments.length).to.eq(pm.environment.get('numberOfComments'))",
+											"})",
+											"",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/posts/{{postId}}?_embed=comments",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"posts",
+										"{{postId}}"
+									],
+									"query": [
+										{
+											"key": "_embed",
+											"value": "comments"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Delete a post and ensure comment deletion",
+					"item": [
+						{
+							"name": "Create a Post",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 201(created)', ()=> {",
+											"    pm.expect(pm.response.code).to.eq(201)",
+											"})",
+											"",
+											"pm.test('Response time is less than the limit', ()=> {",
+											"    pm.expect(pm.response.responseTime).to.be.below(Number(pm.environment.get('responseTimeLimit')))",
+											"})",
+											"",
+											"const response = pm.response.json();",
+											"",
+											"pm.test('Verify response is an object', ()=>{",
+											"    pm.expect(response).to.not.be.null",
+											"    pm.expect(response).to.be.an('object')",
+											"})",
+											"",
+											"pm.test('Verify post has all added properties and values', ()=>{",
+											"   const prop = ['userId', 'title', 'body']",
+											"   const values = [1, 'Sample Post', 'Sample post body']",
+											"   prop.forEach((p, i)=> {",
+											"       pm.expect(response).to.have.property(p).to.eq(values[i])",
+											"   }) ",
+											"})",
+											"",
+											"pm.test('Post has a valid auto-generated Id', ()=>{",
+											"    pm.expect(response.id).to.not.be.null",
+											"    pm.expect(response.id).to.be.a('number')",
+											"    pm.environment.set('postId', response.id)",
+											"})",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n      \"userId\": 1,\n      \"title\": \"Sample Post\",\n      \"body\": \"Sample post body\"\n    }",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{baseUrl}}/posts"
+							},
+							"response": []
+						},
+						{
+							"name": "New Post has no Associated Comments",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 200', ()=> {",
+											"    pm.expect(pm.response.code).to.eq(200)",
+											"})",
+											"",
+											"pm.test('Response time is less than the limit', ()=> {",
+											"    pm.expect(pm.response.responseTime).to.be.below(Number(pm.environment.get('responseTimeLimit')))",
+											"})",
+											"",
+											"const response = pm.response.json();",
+											"",
+											"pm.test('Verify response is an object', ()=>{",
+											"    pm.expect(response).to.not.be.null",
+											"    pm.expect(response).to.be.an('object')",
+											"})",
+											"",
+											"pm.test('Post has a valid id', ()=>{",
+											"    pm.expect(response.id).to.not.be.null",
+											"    pm.expect(response.id).to.be.a('number')",
+											"})",
+											"",
+											"pm.test('New post has no associated comments', ()=>{",
+											"    pm.expect(response.comments.length).to.eq(0)",
+											"})",
+											"",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/posts/{{postId}}?_embed=comments",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"posts",
+										"{{postId}}"
+									],
+									"query": [
+										{
+											"key": "_embed",
+											"value": "comments"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create a Comment  for the Post",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 201(created)', ()=> {",
+											"    pm.expect(pm.response.code).to.eq(201)",
+											"})",
+											"",
+											"pm.test('Response time is less than the the limit', ()=> {",
+											"    pm.expect(pm.response.responseTime).to.be.below(Number(pm.environment.get('responseTimeLimit')))",
+											"})",
+											"",
+											"const response = pm.response.json();",
+											"",
+											"pm.test('Verify response is an object', ()=>{",
+											"    pm.expect(response).to.not.be.null",
+											"    pm.expect(response).to.be.an('object')",
+											"})",
+											"",
+											"pm.test('Verify comment has all added properties and values', ()=>{",
+											"   const prop = ['postId', 'name', 'email', 'body']",
+											"   const values = [pm.environment.get('postId'), 'Sample Comment', 'Jayne_Kuhic@sydney.com', 'Sample Body']",
+											"   prop.forEach((p, i)=> {",
+											"       pm.expect(response).to.have.property(p).to.eq(values[i])",
+											"   }) ",
+											"})",
+											"",
+											"pm.test('Comment has a valid auto-generated Id', ()=>{",
+											"    pm.expect(response.id).to.not.be.null",
+											"    pm.expect(response.id).to.be.a('number')",
+											"    pm.environment.set('commentId', response.id)",
+											"})",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"description": "Without this, it will return a 2XX status code, but without changes being made to the data.",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"postId\": {{postId}},\n    \"name\": \"Sample Comment\",\n    \"email\": \"Jayne_Kuhic@sydney.com\",\n    \"body\": \"Sample Body\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{baseUrl}}/comments/"
+							},
+							"response": []
+						},
+						{
+							"name": "Check Comment Association with the Post",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 200', ()=> {",
+											"    pm.expect(pm.response.code).to.eq(200)",
+											"})",
+											"",
+											"pm.test('Response time is less than the limit', ()=> {",
+											"    pm.expect(pm.response.responseTime).to.be.below(Number(pm.environment.get('responseTimeLimit')))",
+											"})",
+											"",
+											"const response = pm.response.json();",
+											"",
+											"pm.test('Verify response is an object', ()=>{",
+											"    pm.expect(response).to.not.be.null",
+											"    pm.expect(response).to.be.an('object')",
+											"})",
+											"",
+											"pm.test('The post should have a valid id and exisitng comments', ()=>{",
+											"    pm.expect(response.id).to.be.a('number')",
+											"    pm.expect(response.comments).to.not.be.empty //since we added a commwnt recently, we know it will not be empty",
+											"})",
+											"",
+											"pm.test('All comments should have the same postId', ()=>{",
+											"     _.each(response.comments, (item) => {",
+											"        pm.expect(item).to.have.property('postId').to.be.a('number')",
+											"        pm.expect(item).to.have.property('postId').to.eq(pm.environment.get('postId'))",
+											"    })",
+											"})",
+											"",
+											"pm.test('Check if the recently added comment is associated with this post', ()=>{",
+											"     //when our added comment is at the end for sure",
+											"        pm.expect(_.last(response.comments).id).to.eq(pm.environment.get('commentId')) ",
+											"",
+											"    //when our added comment could be anywhere in the comment section of a post",
+											"   /* const comment = response.comments.find(a => a.id === Number(pm.environment.get('commentId')));",
+											"    pm.expect(comment).to.not.be.undefined */",
+											"      ",
+											"})",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/posts/{{postId}}?_embed=comments",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"posts",
+										"{{postId}}"
+									],
+									"query": [
+										{
+											"key": "_embed",
+											"value": "comments"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete  Post along with Dependent Comments",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 200', ()=> {",
+											"    pm.expect(pm.response.code).to.eq(200)",
+											"})",
+											"",
+											"pm.test('Response time is less than the limit', ()=> {",
+											"    pm.expect(pm.response.responseTime).to.be.below(Number(pm.environment.get('responseTimeLimit')))",
+											"})",
+											"",
+											"const response = pm.response.json();",
+											"",
+											"pm.test('Verify post has been deleted', ()=>{",
+											"    pm.expect(response).to.be.an('object').is.empty",
+											"})",
+											"",
+											"",
+											"",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/posts/{{postId}}?_dependent=comments",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"posts",
+										"{{postId}}"
+									],
+									"query": [
+										{
+											"key": "_dependent",
+											"value": "comments"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Verify Comments have been Deleted",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 200', ()=> {",
+											"    pm.expect(pm.response.code).to.eq(200)",
+											"})",
+											"",
+											"pm.test('Response time is less than the limit', ()=> {",
+											"    pm.expect(pm.response.responseTime).to.be.below(Number(pm.environment.get('responseTimeLimit')))",
+											"})",
+											"",
+											"const response = pm.response.json();",
+											"",
+											"pm.test('Check if the comments have also been deleted after post deletion', ()=>{",
+											"  pm.expect(response).is.empty",
+											"})",
+											"",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/comments/?postId={{postId}}",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"comments",
+										""
+									],
+									"query": [
+										{
+											"key": "postId",
+											"value": "{{postId}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "No Comment should be Associated with the Deleted Comment Id",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 404(Not Found)', ()=> {",
+											"    pm.expect(pm.response.code).to.eq(404)",
+											"})",
+											"",
+											"pm.test('Response time is less than the limit', ()=> {",
+											"    pm.expect(pm.response.responseTime).to.be.below(Number(pm.environment.get('responseTimeLimit')))",
+											"})",
+											"",
+											"const response = pm.response.json();",
+											"",
+											"pm.test('The response is empty', ()=>{",
+											"  pm.expect(response).is.empty",
+											"})",
+											"",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/comments/:id",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"comments",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "{{commentId}}"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Negative Cases",
+			"item": [
+				{
+					"name": "Get Comment",
+					"item": [
+						{
+							"name": "Get Comment with Invalid Comment Id",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 404(Not Found)', ()=> {",
+											"    pm.expect(pm.response.code).to.eq(404)",
+											"})",
+											"",
+											"pm.test('Response time is less than the limit', ()=> {",
+											"    pm.expect(pm.response.responseTime).to.be.below(Number(pm.environment.get('responseTimeLimit')))",
+											"})",
+											"const response = pm.response.json()",
+											"",
+											"pm.test('Response body is empty', ()=>{",
+											"    pm.expect(response).to.be.empty",
+											"})"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/comments/:id",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"comments",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "{{invalidCommentId}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Comments for a Non-Existent Post",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 404(Not Found)', ()=> {",
+											"    pm.expect(pm.response.code).to.eq(404)",
+											"})",
+											"",
+											"pm.test('Response time is less than the limit', ()=> {",
+											"    pm.expect(pm.response.responseTime).to.be.below(Number(pm.environment.get('responseTimeLimit')))",
+											"})",
+											"const response = pm.response.json()",
+											"",
+											"pm.test('Response body is empty', ()=>{",
+											"    pm.expect(response).to.be.empty",
+											"})"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/posts/{{invalidPostId}}?_embed=comments",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"posts",
+										"{{invalidPostId}}"
+									],
+									"query": [
+										{
+											"key": "_embed",
+											"value": "comments"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Create Comments",
+					"item": [
+						{
+							"name": "Create a Comment with Invalid Post Id (Not Working)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code should be an error code - This does not work', ()=> {",
+											"    pm.expect(pm.response.code).to.not.eq(201)",
+											"})",
+											"",
+											"const response = pm.response.json()",
+											"",
+											"pm.test('Response time is less than the limit', ()=> {",
+											"    pm.expect(pm.response.responseTime).to.be.below(Number(pm.environment.get('responseTimeLimit')))",
+											"    pm.environment.set('commentId', response.id)",
+											"})",
+											"",
+											"// This is failing, as the server is not handling this scenario, and allows the creation of a comment, with invalid post Id",
+											"//It also allows to create a comment without a post Id"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"postId\": {{invalidPostId}},\n    \"name\": \"indeed, by which he wants to reject and the like of them\",\n    \"email\": \"Jayne_Kuhic@sydney.com\",\n    \"body\": \"for he was born, there is nothing with pain, all pleasure is never\"\n}"
+								},
+								"url": "{{baseUrl}}/comments/"
+							},
+							"response": []
+						},
+						{
+							"name": "Delete the Comment",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 200', ()=> {",
+											"    pm.expect(pm.response.code).to.eq(200)",
+											"})",
+											"",
+											"pm.test('Response time is less than the limit', ()=> {",
+											"    pm.expect(pm.response.responseTime).to.be.below(Number(pm.environment.get('responseTimeLimit')))",
+											"})",
+											"",
+											"const response = pm.response.json();",
+											"",
+											"pm.test('Verify response is an object', ()=>{",
+											"    pm.expect(response).to.not.be.null",
+											"    pm.expect(response).to.be.an('object')",
+											"})",
+											"",
+											"pm.test('Check if the deleted comment is NOT associated with the post', ()=>{",
+											"     pm.expect(response).is.empty",
+											"})",
+											"",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/comments/:id",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"comments",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "{{commentId}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create a Comment with Empty Body (Not Working)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is some Error (Missing Data) - This does not work', ()=> {",
+											"    pm.expect(pm.response.code).to.not.eq(201)",
+											"})",
+											"",
+											"const response = pm.response.json()",
+											"",
+											"pm.test('Response time is less than the limit', ()=> {",
+											"    pm.expect(pm.response.responseTime).to.be.below(Number(pm.environment.get('responseTimeLimit')))",
+											"    pm.environment.set('commentId', response.id)",
+											"})",
+											"",
+											"//this case is not handles properly, there should be some kind of error, indicating the body is empty "
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": ""
+								},
+								"url": "{{baseUrl}}/comments/"
+							},
+							"response": []
+						},
+						{
+							"name": "Delete the Comment",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 200', ()=> {",
+											"    pm.expect(pm.response.code).to.eq(200)",
+											"})",
+											"",
+											"pm.test('Response time is less than the limit', ()=> {",
+											"    pm.expect(pm.response.responseTime).to.be.below(Number(pm.environment.get('responseTimeLimit')))",
+											"})",
+											"",
+											"const response = pm.response.json();",
+											"",
+											"pm.test('Verify response is an object', ()=>{",
+											"    pm.expect(response).to.not.be.null",
+											"    pm.expect(response).to.be.an('object')",
+											"})",
+											"",
+											"pm.test('Check if the deleted comment is NOT associated with the post', ()=>{",
+											"     pm.expect(response).is.empty",
+											"})",
+											"",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/comments/:id",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"comments",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "{{commentId}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create a Comment with a Long Text",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 201(created)', ()=> {",
+											"    pm.expect(pm.response.code).to.eq(201)",
+											"})",
+											"",
+											"pm.test('Response time is less than the limit', ()=> {",
+											"    pm.expect(pm.response.responseTime).to.be.below(Number(pm.environment.get('responseTimeLimit')))",
+											"})",
+											"",
+											"const response = pm.response.json();",
+											"",
+											"pm.test('Verify response is an object', ()=>{",
+											"    pm.expect(response).to.not.be.null",
+											"    pm.expect(response).to.be.an('object')",
+											"})",
+											"",
+											"pm.test('Comment has an auto-generated Id', ()=>{",
+											"    pm.expect(response.id).to.not.be.null",
+											"    pm.expect(response.id).to.be.a('number') ",
+											"    pm.environment.set('commentId', response.id)",
+											"})",
+											"",
+											"pm.test('Verify comment has the long text values', ()=>{",
+											"    pm.expect(response.body).to.eq('for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never')",
+											"})",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"postId\": 5,\n    \"name\": \"indeed, by which he wants to reject and the like of them\",\n    \"email\": \"Jayne_Kuhic@sydney.com\",\n    \"body\": \"for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never, for he was born, there is nothing with pain, all pleasure is never\"\n}"
+								},
+								"url": "{{baseUrl}}/comments/"
+							},
+							"response": []
+						},
+						{
+							"name": "Delete the Comment",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 200', ()=> {",
+											"    pm.expect(pm.response.code).to.eq(200)",
+											"})",
+											"",
+											"pm.test('Response time is less than the limit', ()=> {",
+											"    pm.expect(pm.response.responseTime).to.be.below(Number(pm.environment.get('responseTimeLimit')))",
+											"})",
+											"",
+											"const response = pm.response.json();",
+											"",
+											"pm.test('Verify response is an object', ()=>{",
+											"    pm.expect(response).to.not.be.null",
+											"    pm.expect(response).to.be.an('object')",
+											"})",
+											"",
+											"pm.test('Check if the deleted comment is NOT associated with the post', ()=>{",
+											"     pm.expect(response).is.empty",
+											"})",
+											"",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/comments/:id",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"comments",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "{{commentId}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Comment with Existing Comment Id",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code has Internal Server Error', ()=> {",
+											"    pm.expect(pm.response.code).to.eq(500)",
+											"})",
+											"",
+											"pm.test('Response time is less than the limit', ()=> {",
+											"    pm.expect(pm.response.responseTime).to.be.below(Number(pm.environment.get('responseTimeLimit')))",
+											"})",
+											"",
+											"pm.test(\"Error shown in response\",() => {",
+											"  pm.expect(pm.response.text()).to.include('Error: Insert failed, duplicate id');",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"postId\": 5,\n    \"id\": 500,\n    \"name\": \"indeed, by which he wants to reject and the like of them\",\n    \"email\": \"Jayne_Kuhic@sydney.com\",\n    \"body\": \"for he was born, there is nothing with pain, all pleasure is never\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{baseUrl}}/comments/"
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Update Comment",
+					"item": [
+						{
+							"name": "Create a New Comment",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 201(created)', ()=> {",
+											"    pm.expect(pm.response.code).to.eq(201)",
+											"})",
+											"",
+											"pm.test('Response time is less than the limit', ()=> {",
+											"    pm.expect(pm.response.responseTime).to.be.below(Number(pm.environment.get('responseTimeLimit')))",
+											"})",
+											"",
+											"const response = pm.response.json();",
+											"",
+											"pm.test('Verify response is an object', ()=>{",
+											"    pm.expect(response).to.not.be.null",
+											"    pm.expect(response).to.be.an('object')",
+											"})",
+											"",
+											"pm.test('Verify comment has all added properties and values', ()=>{",
+											"   const prop = ['postId', 'name', 'email', 'body']",
+											"   const values = [5, 'indeed, by which he wants to reject and the like of them', 'Jayne_Kuhic@sydney.com', 'for he was born, there is nothing with pain, all pleasure is never']",
+											"   prop.forEach((p, i)=> {",
+											"       pm.expect(response).to.have.property(p).to.eq(values[i])",
+											"   }) ",
+											"   pm.environment.set('postId', response.postId)",
+											"})",
+											"",
+											"pm.test('Comment has a valid auto-generated Id', ()=>{",
+											"    pm.expect(response.id).to.not.be.null",
+											"    pm.expect(response.id).to.be.a('number')",
+											"    pm.environment.set('commentId', response.id)",
+											"})",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json",
+										"description": "Without this, it will return a 2XX status code, but without changes being made to the data.",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"postId\": 5,\n    \"name\": \"indeed, by which he wants to reject and the like of them\",\n    \"email\": \"Jayne_Kuhic@sydney.com\",\n    \"body\": \"for he was born, there is nothing with pain, all pleasure is never\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": "{{baseUrl}}/comments/"
+							},
+							"response": []
+						},
+						{
+							"name": "Update a Comment with Missing Data - (Not Working)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is some Error (Missing Data) - This does not work', ()=> {",
+											"    pm.expect(pm.response.code).to.not.eq(200)",
+											"})",
+											"",
+											"pm.test('Response time is less than the limit', ()=> {",
+											"    pm.expect(pm.response.responseTime).to.be.below(Number(pm.environment.get('responseTimeLimit')))",
+											"})",
+											"",
+											"const response = pm.response.json();",
+											"",
+											"pm.test('Verify response is an object', ()=>{",
+											"    pm.expect(response).to.not.be.null",
+											"    pm.expect(response).to.be.an('object')",
+											"})",
+											"",
+											"pm.test('Verify comment id is unchanged', ()=>{",
+											"    pm.expect(response.id).to.not.be.null",
+											"    pm.expect(response.id).to.eq(pm.environment.get('commentId'))",
+											"})",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"body\": \"For those who praise, as it were, indeed with great pleasure, those times when they are in need, but rather than rejecting them, and for the wise accuse them\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/comments/:id",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"comments",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "{{commentId}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update a Comment without any Data - (Not Working)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is some Error (Missing Data) - This does not work', ()=> {",
+											"    pm.expect(pm.response.code).to.not.eq(200)",
+											"})",
+											"",
+											"pm.test('Response time is less than the limit', ()=> {",
+											"    pm.expect(pm.response.responseTime).to.be.below(Number(pm.environment.get('responseTimeLimit')))",
+											"})",
+											"",
+											"const response = pm.response.json();",
+											"",
+											"pm.test('Verify response is an object', ()=>{",
+											"    pm.expect(response).to.not.be.null",
+											"    pm.expect(response).to.be.an('object')",
+											"})",
+											"",
+											"pm.test('Verify comment id is unchanged', ()=>{",
+											"    pm.expect(response.id).to.not.be.null",
+											"    pm.expect(response.id).to.eq(pm.environment.get('commentId'))",
+											"})",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/comments/:id",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"comments",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "{{commentId}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update a Non-Existent Comment",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 404(Not Found)', ()=> {",
+											"    pm.expect(pm.response.code).to.eq(404)",
+											"})",
+											"",
+											"pm.test('Response time is less than limit', ()=> {",
+											"    pm.expect(pm.response.responseTime).to.be.below(Number(pm.environment.get('responseTimeLimit')))",
+											"})",
+											"",
+											"const response = pm.response.json()",
+											"",
+											"pm.test('Response body is empty', ()=>{",
+											"    pm.expect(response).to.be.empty",
+											"})"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"postId\": 5,\n    \"name\": \"indeed, by which he wants to reject and the like of them\",\n    \"email\": \"Jayne_Kuhic@sydney.com\",\n    \"body\": \"for he was born, there is nothing with pain, all pleasure is never\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/comments/:id",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"comments",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "{{invalidCommentId}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Patch a Non-Existent Comment",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 404(Not Found)', ()=> {",
+											"    pm.expect(pm.response.code).to.eq(404)",
+											"})",
+											"",
+											"pm.test('Response time is less than limit', ()=> {",
+											"    pm.expect(pm.response.responseTime).to.be.below(Number(pm.environment.get('responseTimeLimit')))",
+											"})",
+											"",
+											"const response = pm.response.json()",
+											"",
+											"pm.test('Response body is empty', ()=>{",
+											"    pm.expect(response).to.be.empty",
+											"})"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "PATCH",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n    \"body\": \"for he was born, there is nothing with pain, all pleasure is never\"\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{baseUrl}}/comments/:id",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"comments",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "{{invalidCommentId}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete the Comment",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 200', ()=> {",
+											"    pm.expect(pm.response.code).to.eq(200)",
+											"})",
+											"",
+											"pm.test('Response time is less than the limit', ()=> {",
+											"    pm.expect(pm.response.responseTime).to.be.below(Number(pm.environment.get('responseTimeLimit')))",
+											"})",
+											"",
+											"const response = pm.response.json();",
+											"",
+											"pm.test('Verify response is an object', ()=>{",
+											"    pm.expect(response).to.not.be.null",
+											"    pm.expect(response).to.be.an('object')",
+											"})",
+											"",
+											"pm.test('Check if the deleted comment is NOT associated with the post', ()=>{",
+											"     pm.expect(response).is.empty",
+											"})",
+											"",
+											"",
+											""
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/comments/:id",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"comments",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "{{commentId}}"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Delete Comment",
+					"item": [
+						{
+							"name": "Delete a Non-Existent Comment",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 404(Not Found)', ()=> {",
+											"    pm.expect(pm.response.code).to.eq(404)",
+											"})",
+											"",
+											"pm.test('Response time is less than the limit', ()=> {",
+											"    pm.expect(pm.response.responseTime).to.be.below(Number(pm.environment.get('responseTimeLimit')))",
+											"})",
+											"",
+											"const response = pm.response.json()",
+											"",
+											"pm.test('Response body is empty', ()=>{",
+											"    pm.expect(response).to.be.empty",
+											"})"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/comments/:id",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"comments",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": "{{invalidCommentId}}"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete a Comment without Id",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test('Status code is 404(Not Found)', ()=> {",
+											"    pm.expect(pm.response.code).to.eq(404)",
+											"})",
+											"",
+											"pm.test('Response time is less than the limit', ()=> {",
+											"    pm.expect(pm.response.responseTime).to.be.below(Number(pm.environment.get('responseTimeLimit')))",
+											"})",
+											"",
+											"const response = pm.response.json()",
+											"",
+											"pm.test('Response body is empty', ()=>{",
+											"    pm.expect(response).to.be.empty",
+											"})"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"url": "{{baseUrl}}/comments/"
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "count",
+			"value": ""
+		},
+		{
+			"key": "requestCount",
+			"value": ""
+		}
+	]
+}

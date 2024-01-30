@@ -1,0 +1,10 @@
+{
+  "name": "talonone-takehome-task",
+  "version": "1.0.1",
+  "description": "Take home task for Talon One",
+  "author": "Shaista Abbasi",
+  "license": "ISC",
+  "dependencies": {
+    "json-server": "^0.17.4"
+  }
+}
