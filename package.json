@@ -1,7 +1,11 @@
 {
   "name": "talonone-takehome-task",
   "version": "1.0.1",
-  "description": "Take home task for Talon One",
+  "description": "Take home task for QA position at Talon One",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
   "author": "Shaista Abbasi",
   "license": "ISC",
   "dependencies": {
