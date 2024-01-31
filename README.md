@@ -15,8 +15,8 @@ This repository contains a Postman collection for testing the comment functional
 - Firstly, ensure you have __NodeJs__ and __NPM__ installed. Further instructions can be found [here](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm).
 - Install [JSON Server](https://github.com/typicode/json-server#getting-started) to simulate the REST API responses.
 
-__Please Note:__ The latest alpha version of the josn-server has issues (further details can be found in the technical challenges section), so in order to avoid that, please install the last stable version. I have installed ```0.17.4```.
-I recommend installing all the dependencies in an isolated environment.
+__Please Note:__ The latest alpha version of the josn-server has issues (further details can be found in the technical challenges section), so in order to avoid that, please install the last stable version. We have installed ```0.17.4```.
+We recommend installing all the dependencies in an isolated environment.
 ``` npm install json-server@0.17.4 ```
 Alternatively, you can also install the json-server globally using:
 ``` npm install -g json-server@0.17.4 ```
@@ -27,9 +27,9 @@ The database file is already included in the repo. There are multiple ways to ge
 
 1. Save the response from ```https://jsonplaceholder.typicode.com/db``` as a json file.
 2. Download the db.json from their github repo ```https://github.com/typicode/jsonplaceholder/blob/master/data.json```.
-3. Use the seed.js to generate the ```https://github.com/typicode/jsonplaceholder/blob/master/seed.js``` to generate the db.json (This option provides the most customization as you can choose to omit some resources)
+3. Use the [seed.js](https://github.com/typicode/jsonplaceholder/blob/master/seed.js) to generate the db.json (This option provides the most customization as you can choose to omit some resources).
 
-__Disclaimer:__ to use seed.js, you need to install extra dependencies, please refer to insturctions on jsonplaceholder's github ```https://github.com/typicode/jsonplaceholder/tree/master``` 
+__Disclaimer:__ To use seed.js, you need to install extra dependencies, please refer to instructions on jsonplaceholder's [github](https://github.com/typicode/jsonplaceholder/tree/master). 
 
 ## Running the Tests
 
@@ -41,7 +41,7 @@ __Disclaimer:__ to use seed.js, you need to install extra dependencies, please r
 
 ### 2. Running the Json-Server:
 
-- Run the below command to start the JSON Server with the provided data.
+- Run the below command to start the JSON Server with the provided data file.
 For local environemnt use:
 ```npx json-server --watch db.json``` 
 For global environment use:
@@ -83,7 +83,7 @@ For better visualisation of the test results, I have included an HTML test repor
 
 ## What I Chose to Test and Why
 
-The tests focus on the comment functionality of the social application's API. The postman collection contains two main folders i.e. __Positive__ and __Negative__. Each folder contain subfolders, where each subfolder represents a scenarios and is independent, hence can be executed on its own. 
+The tests focus on the comment functionality of the social application's API. The postman collection contains two main folders __Positive__ and __Negative__. Each folder contain subfolders, where each represents a scenarios and is independent, hence can be executed on its own. 
 
 ### The positive test cases mainly include:
 
@@ -93,7 +93,7 @@ The tests focus on the comment functionality of the social application's API. Th
 
 ### Negative test cases include:
 
-- Tests for invalid request body or url etc for different methods e.g. POST, PUT, DELETE.
+- Tests for invalid request body or url.
 - Some of the tests are failing, because they are not being handled correctly on the server side. These tests are marked with __Does not work__ .
 
 ## How Else I Might Have Done Things 
@@ -115,7 +115,7 @@ In the future, these tests can be expanded to cover:
 
 ## Json-Server Installation
 
-The command to install the json-server ```npm install json-server``` automatically installs the latest alpha version, the resource linking logic is this version is completely broken. Downgrading the json-server version to 0.17.4, fixed the issue.
+The command to install the json-server ```npm install json-server``` automatically installs the latest alpha version, the resource linking logic is this version is completely broken. Downgrading the json-server version to 0.17.4 fixed the issue.
 
 
 
