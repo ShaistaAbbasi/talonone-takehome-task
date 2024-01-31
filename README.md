@@ -1,6 +1,5 @@
 This repository contains a Postman collection for testing the comment functionality of the social application's API. Below are instructions on how to run the tests, along with insights into the testing approach and potential expansions.
 
-***
 
 # Instructions to Run Tests
 
@@ -30,6 +29,7 @@ The database file is already included in the repo. There are multiple ways to ge
 3. Use the [seed.js](https://github.com/typicode/jsonplaceholder/blob/master/seed.js) to generate the db.json (This option provides the most customization as you can choose to omit some resources).
 
 __Disclaimer:__ To use seed.js, you need to install extra dependencies, please refer to instructions on jsonplaceholder's [github](https://github.com/typicode/jsonplaceholder/tree/master). 
+
 
 ## Running the Tests
 
@@ -67,7 +67,6 @@ For global environment use:
 
 - After the test run finishes, there will be 4 failing tests. All these 4 tests should have passed, it seems that there is no server side logic to handle these cases. I have added ```(Does not work)``` next to the test to indicate the failure is expected. 
 
-***
 
 # HTML Test Reports
 
@@ -77,7 +76,6 @@ For better visualisation of the test results, I have included an HTML test repor
 ```newman run SocialAppCollection.json -e SocialAppEnvironment.json --delay-request 300 --reporters cli,htmlextra``` 
 - This folder also contains a screenshot for the test run in cli. But the HTML report could give you a better and detailed view for the test execution. 
 
-***
 
 # Approach to the Assignment
 
@@ -96,11 +94,13 @@ The tests focus on the comment functionality of the social application's API. Th
 - Tests for invalid request body or url.
 - Some of the tests are failing, because they are not being handled correctly on the server side. These tests are marked with __Does not work__ .
 
+
 ## How Else I Might Have Done Things 
 
 - One alternate approach would be to consider using data-driven testing to cover a wider range of scenarios. For example, create a data file (CSV or JSON) with different combinations of input data and expected outcomes.
 - The tests could have been further divided into feature, integration and regression test folders. 
 - I found the json-server mock tool to be very limited in terms of replicating a production ready API. I would have preferred having access to an actual production ready API endpoint.  
+
 
 ## Future Test Expansions
 
@@ -110,6 +110,7 @@ In the future, these tests can be expanded to cover:
 - Security Tests.
 - Exception/error handling for different types of failures.
 - Integrating the API tests into CI/CD pipeline to automatically run tests upon code changes.
+
 
 ## Technical Challenges 
 
