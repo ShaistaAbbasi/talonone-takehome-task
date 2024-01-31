@@ -55,7 +55,7 @@ For global environment use:
 
 ### 4. Set Environment Variables:
 
-- In the imported localhost environment, update the base_url variable to the address of your JSON Server (for us it's http://localhost:3000).
+- In the imported localhost environment, update the baseUrl variable to the address of your JSON Server (for us it's http://localhost:3000).
 
 ### 5. Run the Collection:
 
