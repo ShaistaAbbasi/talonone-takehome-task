@@ -22,7 +22,7 @@ jobs:
 
     - name: start the app
       run: |
-        docker run -d -p 3000:80 -v https://github.com/ShaistaAbbasi/talonone-takehome-task/db.json:/data/db.json clue/json-server
+        docker run -d -p 3000:80 -v ${{ github.workspace }}/db.json:/data/db.json clue/json-server
     
     - name: run postman tests
       uses: matt-ball/newman-action@master
